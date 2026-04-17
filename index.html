@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPI商品数据表 - allmax金标乳清</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+  
+  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px 32px; }
+  .header h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .header .subtitle { opacity: 0.85; font-size: 0.9rem; }
+  .header .note { opacity: 0.65; font-size: 0.75rem; margin-top: 4px; font-style: italic; }
+  
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  
+  /* 筛选栏 */
+  .filter-bar { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .filter-bar .filter-label { font-size: 0.85rem; color: #666; font-weight: 500; }
+  .filter-btn { padding: 6px 16px; border-radius: 20px; border: 1.5px solid #e0e0e0; background: white; color: #555; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .filter-btn:hover { border-color: #667eea; color: #667eea; }
+  .filter-btn.active { background: #667eea; border-color: #667eea; color: white; }
+  .date-range { display: flex; align-items: center; gap: 8px; }
+  .date-range input { padding: 5px 10px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 0.82rem; font-family: inherit; outline: none; }
+  .date-range input:focus { border-color: #667eea; }
+  .date-range .dash { color: #999; }
+  .date-range .apply-btn { padding: 5px 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+  .date-range .apply-btn:hover { background: #5568d3; }
+  .filter-info { margin-left: auto; font-size: 0.8rem; color: #999; }
+  
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card .label { font-size: 0.8rem; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card .value { font-size: 1.6rem; font-weight: 700; color: #222; }
+  .card .sub { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
+  .card:nth-child(1) .value { color: #667eea; }
+  .card:nth-child(2) .value { color: #f59e0b; }
+  .card:nth-child(3) .value { color: #10b981; }
+  .card:nth-child(4) .value { color: #ef4444; }
+  .card:nth-child(5) .value { color: #8b5cf6; }
+  .card:nth-child(6) .value { color: #06b6d4; }
+  
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .chart-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chart-box h3 { font-size: 0.95rem; color: #444; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+  .chart-box canvas { max-height: 280px; }
+  .full-chart { grid-column: 1 / -1; }
+  
+  .table-section { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-top: 20px; }
+  .table-section h3 { font-size: 0.95rem; color: #444; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th { background: #f8f9fa; padding: 10px 8px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e9ecef; position: sticky; top: 0; }
+  tbody tr:hover { background: #f8f9ff; }
+  tbody td { padding: 8px; border-bottom: 1px solid #f0f0f0; }
+  tbody tr:last-child td { border-bottom: none; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .date-cell { color: #667eea; font-weight: 500; }
+  .table-scroll { max-height: 400px; overflow-y: auto; }
+  
+  @media (max-width: 900px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .filter-bar { flex-direction: column; align-items: flex-start; }
+    .filter-info { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FPI商品数据表</h1>
+  <div class="subtitle">商品: allmax金标乳清 &nbsp;|&nbsp; ID: 663773272822 &nbsp;|&nbsp; <span id="data-range-label">-</span></div>
+  <div class="note">⚠️ 数据来源: Excel导出，完整数据到4月16日（线上看板可能有延迟）</div>
+</div>
+
+<div class="container">
+
+  <!-- 筛选栏 -->
+  <div class="filter-bar">
+    <span class="filter-label">📅 时间筛选：</span>
+    <button class="filter-btn active" data-range="yesterday">昨日</button>
+    <button class="filter-btn" data-range="7d">过去7天</button>
+    <button class="filter-btn" data-range="15d">过去15天</button>
+    <button class="filter-btn" data-range="all">全部数据</button>
+    <div class="date-range">
+      <span class="filter-label">自定义：</span>
+      <input type="date" id="date-from">
+      <span class="dash">~</span>
+      <input type="date" id="date-to">
+      <button class="apply-btn" id="apply-custom">应用</button>
+    </div>
+    <div class="filter-info" id="filter-info">-</div>
+  </div>
+
+  <!-- 关键指标卡片 -->
+  <div class="summary-cards">
+    <div class="card">
+      <div class="label">总访客数</div>
+      <div class="value" id="total-visitors">-</div>
+      <div class="sub">日均 <span id="avg-visitors">-</span></div>
+    </div>
+    <div class="card">
+      <div class="label">总推广消耗</div>
+      <div class="value" id="total-cost">-</div>
+      <div class="sub">日均 <span id="avg-cost">-</span></div>
+    </div>
+    <div class="card">
+      <div class="label">总支付金额</div>
+      <div class="value" id="total-sales">-</div>
+      <div class="sub">日均 <span id="avg-sales">-</span></div>
+    </div>
+    <div class="card">
+      <div class="label">总支付买家</div>
+      <div class="value" id="total-buyers">-</div>
+      <div class="sub">累计加购 <span id="total-cart">-</span></div>
+    </div>
+    <div class="card">
+      <div class="label">平均停留时长</div>
+      <div class="value" id="avg-stay">-</div>
+      <div class="sub">秒</div>
+    </div>
+    <div class="card">
+      <div class="label">整体ROI</div>
+      <div class="value" id="avg-roi">-</div>
+      <div class="sub">投入产出比</div>
+    </div>
+  </div>
+
+  <!-- 图表区 -->
+  <div class="charts-grid">
+    <div class="chart-box">
+      <h3>📊 访客数 & 推广消耗趋势</h3>
+      <canvas id="chart-traffic-cost"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>💰 支付金额 & 支付买家数趋势</h3>
+      <canvas id="chart-sales"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>📈 ROI & 加购率趋势</h3>
+      <canvas id="chart-roi-cart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3>⏱️ 平均停留时长趋势</h3>
+      <canvas id="chart-stay"></canvas>
+    </div>
+    <div class="chart-box full-chart">
+      <h3>🔍 各渠道流量对比 (搜索 vs 推荐 vs 关键词 vs 人群)</h3>
+      <canvas id="chart-channel-traffic"></canvas>
+    </div>
+    <div class="chart-box full-chart">
+      <h3>🛒 各渠道支付转化对比</h3>
+      <canvas id="chart-channel-pay"></canvas>
+    </div>
+  </div>
+
+  <!-- 详细数据表 -->
+  <div class="table-section">
+    <h3>📋 每日详细数据 (<span id="table-count">0</span>天)</h3>
+    <div class="table-scroll">
+      <table id="data-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ====== 原始数据 (3月30日 ~ 4月16日, 共18天) ======
+const rawData = [
+  { dateStr: '2026-03-30', visitors: 200, stay: 9.52,  cost: 26.28, roi: 11.28, cart: 25, buyers: 2,  sales: 594.55,  kw_people: 87,  kw_cart: 10, kw_pay: 1,  crowd_people: 1,  crowd_cart: 0, crowd_pay: 0, search_people: 43, search_cart: 3,  search_pay: 1,  rec_people: 67, rec_cart: 7,  rec_pay: 0 },
+  { dateStr: '2026-03-31', visitors: 200, stay: 10.53, cost: 24.42, roi: 0,     cart: 28, buyers: 1,  sales: 550.52,  kw_people: 82,  kw_cart: 11, kw_pay: 0,  crowd_people: 0,  crowd_cart: 0, crowd_pay: 0, search_people: 34, search_cart: 3,  search_pay: 0,  rec_people: 79, rec_cart: 9,  rec_pay: 0 },
+  { dateStr: '2026-04-01', visitors: 221, stay: 8.34,  cost: 24.56, roi: 44.83, cart: 18, buyers: 7,  sales: 2835.40, kw_people: 104, kw_cart: 13, kw_pay: 2,  crowd_people: 0,  crowd_cart: 0, crowd_pay: 0, search_people: 43, search_cart: 5,  search_pay: 3,  rec_people: 67, rec_cart: 1,  rec_pay: 0 },
+  { dateStr: '2026-04-02', visitors: 234, stay: 8.75,  cost: 27.73, roi: 22.01, cart: 20, buyers: 4,  sales: 1738.94, kw_people: 103, kw_cart: 9,  kw_pay: 1,  crowd_people: 0,  crowd_cart: 0, crowd_pay: 0, search_people: 23, search_cart: 3,  search_pay: 0,  rec_people: 96, rec_cart: 5,  rec_pay: 0 },
+  { dateStr: '2026-04-03', visitors: 195, stay: 7.36,  cost: 14.18, roi: 22.43, cart: 29, buyers: 1,  sales: 318.00,   kw_people: 72,  kw_cart: 12, kw_pay: 1,  crowd_people: 0,  crowd_cart: 0, crowd_pay: 0, search_people: 34, search_cart: 7,  search_pay: 0,  rec_people: 77, rec_cart: 8,  rec_pay: 0 },
+  { dateStr: '2026-04-04', visitors: 191, stay: 8.45,  cost: 21.77, roi: 0,     cart: 18, buyers: 0,  sales: 0,       kw_people: 62,  kw_cart: 9,  kw_pay: 0,  crowd_people: 16, crowd_cart: 0, crowd_pay: 0, search_people: 31, search_cart: 5,  search_pay: 0,  rec_people: 70, rec_cart: 3,  rec_pay: 0 },
+  { dateStr: '2026-04-05', visitors: 248, stay: 14.85, cost: 29.19, roi: 0,     cart: 15, buyers: 2,  sales: 883.74,   kw_people: 75,  kw_cart: 4,  kw_pay: 0,  crowd_people: 73, crowd_cart: 0, crowd_pay: 0, search_people: 31, search_cart: 4,  search_pay: 2,  rec_people: 63, rec_cart: 2,  rec_pay: 0 },
+  { dateStr: '2026-04-06', visitors: 302, stay: 6.94,  cost: 57.81, roi: 0,     cart: 16, buyers: 2,  sales: 891.22,   kw_people: 79,  kw_cart: 9,  kw_pay: 0,  crowd_people: 108, crowd_cart: 2, crowd_pay: 2, search_people: 32, search_cart: 2,  search_pay: 1,  rec_people: 72, rec_cart: 2,  rec_pay: 1 },
+  { dateStr: '2026-04-07', visitors: 441, stay: 9.92,  cost: 88.44, roi: 3.54, cart: 16, buyers: 2,  sales: 626.44,   kw_people: 142, kw_cart: 9,  kw_pay: 1,  crowd_people: 157, crowd_cart: 1, crowd_pay: 0, search_people: 24, search_cart: 2,  search_pay: 1,  rec_people: 103, rec_cart: 2,  rec_pay: 0 },
+  { dateStr: '2026-04-08', visitors: 413, stay: 7.39,  cost: 51.48, roi: 0,     cart: 28, buyers: 2,  sales: 636.00,   kw_people: 102, kw_cart: 7,  kw_pay: 0,  crowd_people: 153, crowd_cart: 2, crowd_pay: 0, search_people: 32, search_cart: 5,  search_pay: 0,  rec_people: 112, rec_cart: 8,  rec_pay: 1 },
+  { dateStr: '2026-04-09', visitors: 358, stay: 9,     cost: 44.63, roi: 0,     cart: 14, buyers: 1,  sales: 605.60,   kw_people: 109, kw_cart: 7,  kw_pay: 0,  crowd_people: 82,  crowd_cart: 0, crowd_pay: 0, search_people: 41, search_cart: 1,  search_pay: 1,  rec_people: 113, rec_cart: 3,  rec_pay: 0 },
+  { dateStr: '2026-04-10', visitors: 242, stay: 8.09,  cost: 45.33, roi: 13.24, cart: 12, buyers: 1,  sales: 600.02,   kw_people: 95,  kw_cart: 8,  kw_pay: 1,  crowd_people: 57,  crowd_cart: 1, crowd_pay: 0, search_people: 30, search_cart: 4,  search_pay: 0,  rec_people: 50, rec_cart: 0,  rec_pay: 0 },
+  { dateStr: '2026-04-11', visitors: 213, stay: 8.51,  cost: 84.13, roi: 3.48, cart: 18, buyers: 8,  sales: 4134.00,  kw_people: 40,  kw_cart: 7,  kw_pay: 1,  crowd_people: 70,  crowd_cart: 0, crowd_pay: 0, search_people: 60, search_cart: 9,  search_pay: 6,  rec_people: 31, rec_cart: 0,  rec_pay: 0 },
+  { dateStr: '2026-04-12', visitors: 237, stay: 12.42, cost: 88.61, roi: 6.56, cart: 20, buyers: 4,  sales: 1732.22,  kw_people: 98,  kw_cart: 5,  kw_pay: 2,  crowd_people: 51,  crowd_cart: 1, crowd_pay: 0, search_people: 49, search_cart: 5,  search_pay: 2,  rec_people: 30, rec_cart: 0,  rec_pay: 0 },
+  { dateStr: '2026-04-13', visitors: 236, stay: 12.36, cost: 113.59, roi: 15.41, cart: 20, buyers: 5,  sales: 1750.22,  kw_people: 125, kw_cart: 13, kw_pay: 5,  crowd_people: 36,  crowd_cart: 0, crowd_pay: 0, search_people: 55, search_cart: 5,  search_pay: 1,  rec_people: 10, rec_cart: 0,  rec_pay: 0 },
+  { dateStr: '2026-04-14', visitors: 384, stay: 8.69,  cost: 119.04, roi: 19.61, cart: 39, buyers: 10, sales: 4133.57,  kw_people: 164, kw_cart: 19, kw_pay: 6,  crowd_people: 35,  crowd_cart: 0, crowd_pay: 0, search_people: 83, search_cart: 10, search_pay: 4,  rec_people: 83, rec_cart: 2,  rec_pay: 0 },
+  { dateStr: '2026-04-15', visitors: 405, stay: 12.36, cost: 126.31, roi: 11.47, cart: 43, buyers: 10, sales: 3786.72,  kw_people: 185, kw_cart: 22, kw_pay: 4,  crowd_people: 21,  crowd_cart: 0, crowd_pay: 0, search_people: 89, search_cart: 11, search_pay: 4,  rec_people: 86, rec_cart: 4,  rec_pay: 0 },
+  { dateStr: '2026-04-16', visitors: 364, stay: 11.19, cost: 120.72, roi: 2.39,  cart: 35, buyers: 4,  sales: 1735.89,  kw_people: 145, kw_cart: 15, kw_pay: 1,  crowd_people: 17,  crowd_cart: 0, crowd_pay: 0, search_people: 104, search_cart: 16, search_pay: 2,  rec_people: 53, rec_cart: 1,  rec_pay: 0 }
+];
+
+// ====== 日期范围筛选 ======
+function getDateRange(range, customFrom, customTo) {
+  const latest = rawData[rawData.length - 1].dateStr;
+  let from, to, label;
+  
+  if (range === 'all') {
+    from = rawData[0].dateStr;
+    to = latest;
+    label = `全部数据 (${rawData.length}天)`;
+  } else if (range === 'yesterday') {
+    to = latest;
+    from = latest;
+    label = '昨日 (04-16)';
+  } else if (range === '7d') {
+    to = latest;
+    const idx = rawData.length - 7;
+    from = idx >= 0 ? rawData[idx].dateStr : rawData[0].dateStr;
+    label = '过去7天 (04-10~04-16)';
+  } else if (range === '15d') {
+    to = latest;
+    const idx = rawData.length - 15;
+    from = idx >= 0 ? rawData[idx].dateStr : rawData[0].dateStr;
+    label = '过去15天';
+  } else if (range === 'custom') {
+    from = customFrom;
+    to = customTo;
+    label = `${from} ~ ${to}`;
+  }
+  
+  return { from, to, label };
+}
+
+function filterData(from, to) {
+  return rawData.filter(r => r.dateStr >= from && r.dateStr <= to);
+}
+
+// ====== 更新图表和指标 ======
+let charts = {};
+
+function updateDashboard(data, rangeLabel) {
+  if (!data || data.length === 0) return;
+  
+  document.getElementById('data-range-label').textContent = `数据周期: ${rangeLabel}`;
+  document.getElementById('filter-info').textContent = `共 ${data.length} 天`;
+
+  // 汇总指标
+  const totalVisitors = data.reduce((s, r) => s + r.visitors, 0);
+  const totalCost = data.reduce((s, r) => s + r.cost, 0);
+  const totalSales = data.reduce((s, r) => s + r.sales, 0);
+  const totalBuyers = data.reduce((s, r) => s + r.buyers, 0);
+  const totalCart = data.reduce((s, r) => s + r.cart, 0);
+  const avgStay = (data.reduce((s, r) => s + r.stay, 0) / data.length).toFixed(2);
+  const avgRoi = totalCost > 0 ? (totalSales / totalCost).toFixed(2) : '-';
+
+  document.getElementById('total-visitors').textContent = totalVisitors.toLocaleString();
+  document.getElementById('avg-visitors').textContent = Math.round(totalVisitors / data.length);
+  document.getElementById('total-cost').textContent = '¥' + totalCost.toFixed(0);
+  document.getElementById('avg-cost').textContent = '¥' + (totalCost / data.length).toFixed(0);
+  document.getElementById('total-sales').textContent = '¥' + totalSales.toFixed(0);
+  document.getElementById('avg-sales').textContent = '¥' + (totalSales / data.length).toFixed(0);
+  document.getElementById('total-buyers').textContent = totalBuyers;
+  document.getElementById('total-cart').textContent = totalCart;
+  document.getElementById('avg-stay').textContent = avgStay;
+  document.getElementById('avg-roi').textContent = avgRoi;
+
+  // 更新图表
+  const labels = data.map(r => r.dateStr.slice(5)); // MM-DD
+  
+  // 销毁旧图表
+  Object.values(charts).forEach(c => c && c.destroy());
+
+  // 1. 访客 & 消耗
+  charts.trafficCost = new Chart(document.getElementById('chart-traffic-cost'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '商品访客数', data: data.map(r => r.visitors), borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
+        { label: '推广消耗(¥)', data: data.map(r => r.cost), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, yAxisID: 'y1' }
+      ]
+    },
+    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: '访客数' } }, y1: { type: 'linear', position: 'right', title: { display: true, text: '消耗(¥)' }, grid: { drawOnChartArea: false } } } }
+  });
+
+  // 2. 销售额 & 买家
+  charts.sales = new Chart(document.getElementById('chart-sales'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '总支付金额(¥)', data: data.map(r => r.sales), backgroundColor: 'rgba(16,185,129,0.7)', yAxisID: 'y' },
+        { label: '支付买家数', data: data.map(r => r.buyers), type: 'line', borderColor: '#ef4444', tension: 0.4, yAxisID: 'y1' }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: '金额(¥)' } }, y1: { type: 'linear', position: 'right', title: { display: true, text: '人数' }, grid: { drawOnChartArea: false } } } }
+  });
+
+  // 3. ROI & 加购
+  charts.roiCart = new Chart(document.getElementById('chart-roi-cart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '推广直接ROI', data: data.map(r => r.roi), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
+        { label: '加购人数', data: data.map(r => r.cart), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.1)', fill: true, tension: 0.4, yAxisID: 'y1' }
+      ]
+    },
+    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: 'ROI' } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } } }
+  });
+
+  // 4. 停留时长
+  charts.stay = new Chart(document.getElementById('chart-stay'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label: '平均停留时长(秒)', data: data.map(r => r.stay), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointRadius: 4 }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '秒' } } } }
+  });
+
+  // 5. 渠道流量
+  charts.channelTraffic = new Chart(document.getElementById('chart-channel-traffic'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: '搜索人数', data: data.map(r => r.search_people), borderColor: '#667eea', tension: 0.4, fill: false },
+        { label: '推荐人数', data: data.map(r => r.rec_people), borderColor: '#f59e0b', tension: 0.4, fill: false },
+        { label: '关键词推广', data: data.map(r => r.kw_people), borderColor: '#10b981', tension: 0.4, fill: false },
+        { label: '人群推广', data: data.map(r => r.crowd_people), borderColor: '#ef4444', tension: 0.4, fill: false }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: '人数' } } } }
+  });
+
+  // 6. 渠道支付
+  charts.channelPay = new Chart(document.getElementById('chart-channel-pay'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '关键词支付', data: data.map(r => r.kw_pay), backgroundColor: 'rgba(16,185,129,0.7)' },
+        { label: '人群支付', data: data.map(r => r.crowd_pay), backgroundColor: 'rgba(239,68,68,0.7)' },
+        { label: '搜索支付', data: data.map(r => r.search_pay), backgroundColor: 'rgba(102,126,234,0.7)' },
+        { label: '推荐支付', data: data.map(r => r.rec_pay), backgroundColor: 'rgba(245,158,11,0.7)' }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { stacked: true, title: { display: true, text: '支付数' } }, x: { stacked: true } } }
+  });
+
+  // 更新数据表
+  const headers = ['日期', '星期', '访客数', '停留(s)', '推广消耗', 'ROI', '加购', '买家', '支付金额', '关键词人', '关键词加', '关键词付', '人群人', '人群加', '人群付', '搜索人', '搜索加', '搜索付', '推荐人', '推荐加', '推荐付'];
+  const weekdays = ['一','二','三','四','五','六','日'];
+  const thead = document.querySelector('#data-table thead');
+  const tbody = document.querySelector('#data-table tbody');
+  thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+  
+  tbody.innerHTML = data.slice().reverse().map(r => {
+    const wd = weekdays[new Date(r.dateStr).getDay() === 0 ? 6 : new Date(r.dateStr).getDay() - 1];
+    return `<tr>
+      <td class="date-cell">${r.dateStr}</td>
+      <td class="num">${wd}</td>
+      <td class="num">${r.visitors}</td>
+      <td class="num">${r.stay}</td>
+      <td class="num">${r.cost.toFixed(2)}</td>
+      <td class="num">${r.roi > 0 ? r.roi.toFixed(2) : '-'}</td>
+      <td class="num">${r.cart}</td>
+      <td class="num">${r.buyers}</td>
+      <td class="num">${r.sales > 0 ? '¥' + r.sales.toFixed(2) : '-'}</td>
+      <td class="num">${r.kw_people}</td>
+      <td class="num">${r.kw_cart}</td>
+      <td class="num">${r.kw_pay}</td>
+      <td class="num">${r.crowd_people}</td>
+      <td class="num">${r.crowd_cart}</td>
+      <td class="num">${r.crowd_pay}</td>
+      <td class="num">${r.search_people}</td>
+      <td class="num">${r.search_cart}</td>
+      <td class="num">${r.search_pay}</td>
+      <td class="num">${r.rec_people}</td>
+      <td class="num">${r.rec_cart}</td>
+      <td class="num">${r.rec_pay}</td>
+    </tr>`;
+  }).join('');
+  
+  document.getElementById('table-count').textContent = data.length;
+}
+
+// ====== 初始化日期输入框 ======
+const latestDate = rawData[rawData.length - 1].dateStr;
+const firstDate = rawData[0].dateStr;
+document.getElementById('date-from').value = firstDate;
+document.getElementById('date-from').min = firstDate;
+document.getElementById('date-from').max = latestDate;
+document.getElementById('date-to').value = latestDate;
+document.getElementById('date-to').min = firstDate;
+document.getElementById('date-to').max = latestDate;
+
+// ====== 绑定筛选按钮 ======
+let currentRange = 'yesterday';
+
+function setActiveBtn(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentRange = btn.dataset.range;
+    setActiveBtn(btn);
+    const { from, to, label } = getDateRange(currentRange, null, null);
+    const data = filterData(from, to);
+    updateDashboard(data, label);
+  });
+});
+
+document.getElementById('apply-custom').addEventListener('click', () => {
+  const from = document.getElementById('date-from').value;
+  const to = document.getElementById('date-to').value;
+  if (!from || !to || from > to) {
+    alert('请选择有效的日期范围');
+    return;
+  }
+  setActiveBtn(null);
+  const { label } = getDateRange('custom', from, to);
+  const data = filterData(from, to);
+  updateDashboard(data, label);
+});
+
+// ====== 默认加载昨日 ======
+const { from, to, label } = getDateRange('yesterday', null, null);
+updateDashboard(filterData(from, to), label);
+</script>
+</body>
+</html>
