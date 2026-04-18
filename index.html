@@ -78,6 +78,13 @@
 
   <!-- 筛选栏 -->
   <div class="filter-bar">
+    <span class="filter-label">🔍 商品搜索：</span>
+    <input type="text" id="product-search" placeholder="输入商品ID或名称..." style="padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.82rem;outline:none;width:180px;">
+    <select id="product-select" style="padding:6px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.82rem;outline:none;">
+      <option value="">全部商品</option>
+      <option value="663773272822" selected>allmax金标乳清 (663773272822)</option>
+    </select>
+    <div style="width:1px;height:24px;background:#e0e0e0;margin:0 8px;"></div>
     <span class="filter-label">📅 时间筛选：</span>
     <button class="filter-btn active" data-range="yesterday">昨日</button>
     <button class="filter-btn" data-range="7d">过去7天</button>
@@ -191,6 +198,43 @@ const rawData = [
   { dateStr: '2026-04-16', visitors: 364, stay: 11.19, cost: 120.72, roi: 2.39,  cart: 35, buyers: 4,  sales: 1735.89,  kw_people: 145, kw_cart: 15, kw_pay: 1,  crowd_people: 17,   crowd_cart: 0, crowd_pay: 0, search_people: 104, search_cart: 16, search_pay: 2,  rec_people: 53, rec_cart: 1,  rec_pay: 0 },
   { dateStr: '2026-04-17', visitors: 314, stay: 10.09, cost: 121.72, roi: 2.62,  cart: 17, buyers: 5,  sales: 1480,     kw_people: 104, kw_cart: 10, kw_pay: 1,  crowd_people: 29,   crowd_cart: 1, crowd_pay: 0, search_people: 92,  search_cart: 5,  search_pay: 2,  rec_people: 58,  rec_cart: 0,  rec_pay: 0 }
 ];
+
+// ====== 商品筛选 ======
+// 商品映射（可扩展）
+const products = {
+  '663773272822': 'allmax金标乳清',
+  // 未来可添加更多商品
+};
+
+// 根据选中的商品筛选数据（目前只有1个商品，保持兼容）
+function filterByProduct(data, productId) {
+  if (!productId) return data; // 无选择则返回全部
+  return data; // 当前数据都是allmax金标乳清的
+}
+
+// 商品搜索/选择事件
+document.getElementById('product-search').addEventListener('input', function(e) {
+  const keyword = e.target.value.toLowerCase();
+  const select = document.getElementById('product-select');
+  
+  // 模糊匹配商品
+  let matched = false;
+  for (const [id, name] of Object.entries(products)) {
+    if (name.toLowerCase().includes(keyword) || id.includes(keyword)) {
+      select.value = id;
+      matched = true;
+      break;
+    }
+  }
+  if (!keyword) select.value = '';
+  
+  // 触发数据更新
+  triggerUpdate();
+});
+
+document.getElementById('product-select').addEventListener('change', function() {
+  triggerUpdate();
+});
 
 // ====== 日期范围筛选 ======
 function getDateRange(range, customFrom, customTo) {
@@ -389,6 +433,49 @@ document.getElementById('date-to').value = latestDate;
 document.getElementById('date-to').min = firstDate;
 document.getElementById('date-to').max = latestDate;
 
+// ====== 统一触发更新 ======
+function triggerUpdate() {
+  const range = document.querySelector('.filter-btn.active')?.dataset?.range;
+  const customFrom = document.getElementById('date-from').value;
+  const customTo = document.getElementById('date-to').value;
+  const productId = document.getElementById('product-select').value;
+  
+  let from, to, label;
+  if (range && range !== 'custom') {
+    const result = getDateRange(range, null, null);
+    from = result.from; to = result.to; label = result.label;
+  } else {
+    from = customFrom; to = customTo; label = `${from} ~ ${to}`;
+  }
+  
+  let data = filterData(from, to);
+  data = filterByProduct(data, productId);
+  updateDashboard(data, label);
+}
+
+// 商品搜索/选择事件
+document.getElementById('product-search').addEventListener('input', function(e) {
+  const keyword = e.target.value.toLowerCase().trim();
+  const select = document.getElementById('product-select');
+  
+  if (!keyword) {
+    select.value = '';
+  } else {
+    let matched = false;
+    for (const [id, name] of Object.entries(products)) {
+      if (name.toLowerCase().includes(keyword) || id.includes(keyword)) {
+        select.value = id;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) select.value = ''; // 无匹配清空
+  }
+  triggerUpdate();
+});
+
+document.getElementById('product-select').addEventListener('change', triggerUpdate);
+
 // ====== 绑定筛选按钮 ======
 let currentRange = 'yesterday';
 
@@ -401,9 +488,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     currentRange = btn.dataset.range;
     setActiveBtn(btn);
-    const { from, to, label } = getDateRange(currentRange, null, null);
-    const data = filterData(from, to);
-    updateDashboard(data, label);
+    triggerUpdate();
   });
 });
 
@@ -415,14 +500,12 @@ document.getElementById('apply-custom').addEventListener('click', () => {
     return;
   }
   setActiveBtn(null);
-  const { label } = getDateRange('custom', from, to);
-  const data = filterData(from, to);
-  updateDashboard(data, label);
+  triggerUpdate();
 });
 
 // ====== 默认加载昨日 ======
-const { from, to, label } = getDateRange('yesterday', null, null);
-updateDashboard(filterData(from, to), label);
+setActiveBtn(document.querySelector('[data-range="yesterday"]'));
+triggerUpdate();
 </script>
 </body>
 </html>
