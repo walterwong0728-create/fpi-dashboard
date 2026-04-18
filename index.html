@@ -71,7 +71,7 @@
 <div class="header">
   <h1>FPI商品数据表</h1>
   <div class="subtitle">商品: allmax金标乳清 &nbsp;|&nbsp; ID: 663773272822 &nbsp;|&nbsp; <span id="data-range-label">-</span></div>
-  <div class="note">⚠️ 数据来源: Excel导出，完整数据到4月17日 | 人群推广测试创意: 联系客服再减25元（约95折）</div>
+  <div class="note">⚠️ 数据来源: Excel导出，完整数据到4月18日 | 人群推广测试创意: 联系客服再减25元（约95折）</div>
 </div>
 
 <div class="container">
@@ -188,7 +188,8 @@ const rawData = [
   { dateStr: '2026-04-14', visitors: 236, stay: 10.52, cost: 113.59, roi: 15.41, cart: 20, buyers: 5,  sales: 1750.22,  kw_people: 125, kw_cart: 13, kw_pay: 5,  crowd_people: 36,  crowd_cart: 0, crowd_pay: 0, search_people: 55, search_cart: 5,  search_pay: 1,  rec_people: 10, rec_cart: 0,  rec_pay: 0 },
   { dateStr: '2026-04-15', visitors: 384, stay: 8.69,  cost: 119.04, roi: 19.61, cart: 39, buyers: 10, sales: 4133.57,  kw_people: 164, kw_cart: 19, kw_pay: 6,  crowd_people: 35,  crowd_cart: 0, crowd_pay: 0, search_people: 83, search_cart: 10, search_pay: 4,  rec_people: 83, rec_cart: 2,  rec_pay: 0 },
   { dateStr: '2026-04-16', visitors: 405, stay: 12.36, cost: 126.31, roi: 11.47, cart: 43, buyers: 10, sales: 3786.72,  kw_people: 185, kw_cart: 22, kw_pay: 4,  crowd_people: 21,  crowd_cart: 0, crowd_pay: 0, search_people: 89, search_cart: 11, search_pay: 4,  rec_people: 86, rec_cart: 4,  rec_pay: 0 },
-  { dateStr: '2026-04-17', visitors: 364, stay: 11.19, cost: 120.72, roi: 2.39,  cart: 35, buyers: 4,  sales: 1735.89,  kw_people: 145, kw_cart: 15, kw_pay: 1,  crowd_people: 17,  crowd_cart: 0, crowd_pay: 0, search_people: 104, search_cart: 16, search_pay: 2,  rec_people: 53, rec_cart: 1,  rec_pay: 0 }
+  { dateStr: '2026-04-17', visitors: 364, stay: 11.19, cost: 120.72, roi: 2.39,  cart: 35, buyers: 4,  sales: 1735.89,  kw_people: 145, kw_cart: 15, kw_pay: 1,  crowd_people: 17,  crowd_cart: 0, crowd_pay: 0, search_people: 104, search_cart: 16, search_pay: 2,  rec_people: 53, rec_cart: 1,  rec_pay: 0 },
+  { dateStr: '2026-04-18', visitors: 314, stay: 10.09, cost: 121.72, roi: 2.62,  cart: 17, buyers: 5,  sales: 1480,     kw_people: 104, kw_cart: 10, kw_pay: 1,  crowd_people: 29,  crowd_cart: 1, crowd_pay: 0, search_people: 92,  search_cart: 5,  search_pay: 2,  rec_people: 58,  rec_cart: 0,  rec_pay: 0 }
 ];
 
 // ====== 日期范围筛选 ======
@@ -203,12 +204,12 @@ function getDateRange(range, customFrom, customTo) {
   } else if (range === 'yesterday') {
     to = latest;
     from = latest;
-    label = '昨日 (04-17)';
+    label = '昨日 (04-18)';
   } else if (range === '7d') {
     to = latest;
     const idx = rawData.length - 7;
     from = idx >= 0 ? rawData[idx].dateStr : rawData[0].dateStr;
-    label = '过去7天 (04-11~04-17)';
+    label = '过去7天 (04-12~04-18)';
   } else if (range === '15d') {
     to = latest;
     const idx = rawData.length - 15;
