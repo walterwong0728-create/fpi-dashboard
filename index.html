@@ -177,6 +177,7 @@
 
 <script>
 // ====== 原始数据 (3月30日 ~ 4月17日, 共19天) ======
+// ⚠️ 数据累积：每次更新时追加新数据，已有的日期会更新，不重复不丢失
 const rawData = [
   { dateStr: '2026-03-30', visitors: 200, stay: 9.52,  cost: 26.28, roi: 11.28, cart: 25, buyers: 2,  sales: 594.55,  kw_people: 87,  kw_cart: 10, kw_pay: 1,  crowd_people: 1,   crowd_cart: 0, crowd_pay: 0, search_people: 43, search_cart: 3,  search_pay: 1,  rec_people: 67, rec_cart: 7,  rec_pay: 0 },
   { dateStr: '2026-03-31', visitors: 200, stay: 10.53, cost: 24.42, roi: 0,     cart: 28, buyers: 1,  sales: 550.52,  kw_people: 82,  kw_cart: 11, kw_pay: 0,  crowd_people: 0,   crowd_cart: 0, crowd_pay: 0, search_people: 34, search_cart: 3,  search_pay: 0,  rec_people: 79, rec_cart: 9,  rec_pay: 0 },
@@ -198,6 +199,7 @@ const rawData = [
   { dateStr: '2026-04-16', visitors: 364, stay: 11.19, cost: 120.72, roi: 2.39,  cart: 35, buyers: 4,  sales: 1735.89,  kw_people: 145, kw_cart: 15, kw_pay: 1,  crowd_people: 17,   crowd_cart: 0, crowd_pay: 0, search_people: 104, search_cart: 16, search_pay: 2,  rec_people: 53, rec_cart: 1,  rec_pay: 0 },
   { dateStr: '2026-04-17', visitors: 314, stay: 10.09, cost: 121.72, roi: 2.62,  cart: 17, buyers: 5,  sales: 1480,     kw_people: 104, kw_cart: 10, kw_pay: 1,  crowd_people: 29,   crowd_cart: 1, crowd_pay: 0, search_people: 92,  search_cart: 5,  search_pay: 2,  rec_people: 58,  rec_cart: 0,  rec_pay: 0 }
 ];
+// ⚠️ 更新日志：[3/30-4/17] 初始数据共19天
 
 // ====== 商品筛选 ======
 // 商品映射（可扩展）
