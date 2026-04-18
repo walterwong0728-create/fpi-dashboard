@@ -133,6 +133,11 @@
       <div class="value" id="avg-roi">-</div>
       <div class="sub">投入产出比</div>
     </div>
+    <div class="card">
+      <div class="label">总支付转化率</div>
+      <div class="value" id="avg-conversion">-</div>
+      <div class="sub">买家÷访客</div>
+    </div>
   </div>
 
   <!-- 图表区 -->
@@ -146,7 +151,7 @@
       <canvas id="chart-sales"></canvas>
     </div>
     <div class="chart-box">
-      <h3>📈 ROI & 加购率趋势</h3>
+      <h3>📈 ROI & 转化率趋势 (含支付转化率% & 加购率%)</h3>
       <canvas id="chart-roi-cart"></canvas>
     </div>
     <div class="chart-box">
@@ -317,6 +322,7 @@ function updateDashboard(data, rangeLabel) {
   const totalCart = data.reduce((s, r) => s + r.cart, 0);
   const avgStay = (data.reduce((s, r) => s + r.stay, 0) / data.length).toFixed(2);
   const avgRoi = totalCost > 0 ? (totalSales / totalCost).toFixed(2) : '-';
+  const avgConversion = totalVisitors > 0 ? ((totalBuyers / totalVisitors) * 100).toFixed(2) + '%' : '-';
 
   document.getElementById('total-visitors').textContent = totalVisitors.toLocaleString();
   document.getElementById('avg-visitors').textContent = Math.round(totalVisitors / data.length);
@@ -328,6 +334,7 @@ function updateDashboard(data, rangeLabel) {
   document.getElementById('total-cart').textContent = totalCart;
   document.getElementById('avg-stay').textContent = avgStay;
   document.getElementById('avg-roi').textContent = avgRoi;
+  document.getElementById('avg-conversion').textContent = avgConversion;
 
   // 更新图表
   const labels = data.map(r => r.dateStr.slice(5)); // MM-DD
@@ -361,17 +368,18 @@ function updateDashboard(data, rangeLabel) {
     options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: '金额(¥)' } }, y1: { type: 'linear', position: 'right', title: { display: true, text: '人数' }, grid: { drawOnChartArea: false } } } }
   });
 
-  // 3. ROI & 加购
+  // 3. ROI & 加购率
   charts.roiCart = new Chart(document.getElementById('chart-roi-cart'), {
     type: 'line',
     data: {
       labels,
       datasets: [
         { label: '推广直接ROI', data: data.map(r => r.roi), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
-        { label: '加购人数', data: data.map(r => r.cart), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.1)', fill: true, tension: 0.4, yAxisID: 'y1' }
+        { label: '支付转化率%', data: data.map(r => r.visitors > 0 ? (r.buyers / r.visitors * 100).toFixed(2) : 0), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, yAxisID: 'y1' },
+        { label: '加购率%', data: data.map(r => r.visitors > 0 ? (r.cart / r.visitors * 100).toFixed(2) : 0), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.1)', fill: true, tension: 0.4, yAxisID: 'y1' }
       ]
     },
-    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: 'ROI' } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } } }
+    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top' } }, scales: { y: { type: 'linear', position: 'left', title: { display: true, text: 'ROI' } }, y1: { type: 'linear', position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } } } }
   });
 
   // 4. 停留时长
@@ -415,7 +423,7 @@ function updateDashboard(data, rangeLabel) {
   });
 
   // 更新数据表
-  const headers = ['日期', '星期', '访客数', '停留(s)', '推广消耗', 'ROI', '加购', '买家', '支付金额', '关键词人', '关键词加', '关键词付', '人群人', '人群加', '人群付', '搜索人', '搜索加', '搜索付', '推荐人', '推荐加', '推荐付'];
+  const headers = ['日期', '星期', '访客数', '停留(s)', '推广消耗', 'ROI', '加购', '买家', '转化率%', '支付金额', '关键词人', '关键词加', '关键词付', '人群人', '人群加', '人群付', '搜索人', '搜索加', '搜索付', '推荐人', '推荐加', '推荐付'];
   const weekdays = ['一','二','三','四','五','六','日'];
   const thead = document.querySelector('#data-table thead');
   const tbody = document.querySelector('#data-table tbody');
@@ -432,6 +440,7 @@ function updateDashboard(data, rangeLabel) {
       <td class="num">${r.roi > 0 ? r.roi.toFixed(2) : '-'}</td>
       <td class="num">${r.cart}</td>
       <td class="num">${r.buyers}</td>
+      <td class="num">${r.visitors > 0 ? (r.buyers / r.visitors * 100).toFixed(2) + '%' : '-'}</td>
       <td class="num">${r.sales > 0 ? '¥' + r.sales.toFixed(2) : '-'}</td>
       <td class="num">${r.kw_people}</td>
       <td class="num">${r.kw_cart}</td>
