@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FPI商品数据表 - allmax金标乳清</title>
+<title>FPI商品数据表</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -83,6 +83,7 @@
     <select id="product-select" style="padding:6px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.82rem;outline:none;">
       <option value="">全部商品</option>
       <option value="663773272822" selected>allmax金标乳清 (663773272822)</option>
+      <option value="614500457679">商品614500457679</option>
     </select>
     <div style="width:1px;height:24px;background:#e0e0e0;margin:0 8px;"></div>
     <span class="filter-label">📅 时间筛选：</span>
@@ -201,17 +202,42 @@ const rawData = [
 ];
 // ⚠️ 更新日志：[3/30-4/17] 初始数据共19天
 
+// ====== 商品2数据 (3月3日 ~ 4月17日, 共19天) ======
+const rawData2 = [
+  { dateStr: '2026-04-17', visitors: 161, stay: 11.99, cost: 26.0, roi: 31.91, cart: 18, buyers: 14, sales: 7746.17, kw_people: 66, kw_cart: 5, kw_pay: 2, crowd_people: 19, crowd_cart: 0, crowd_pay: 0, search_people: 24, search_cart: 2, search_pay: 1, rec_people: 12, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-16', visitors: 193, stay: 9.55, cost: 39.43, roi: 0, cart: 5, buyers: 2, sales: 870.42, kw_people: 108, kw_cart: 3, kw_pay: 0, crowd_people: 22, crowd_cart: 0, crowd_pay: 0, search_people: 19, search_cart: 0, search_pay: 0, rec_people: 13, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-15', visitors: 276, stay: 10.06, cost: 51.34, roi: 0, cart: 11, buyers: 6, sales: 2567.96, kw_people: 152, kw_cart: 5, kw_pay: 1, crowd_people: 26, crowd_cart: 2, crowd_pay: 0, search_people: 43, search_cart: 0, search_pay: 2, rec_people: 17, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-14', visitors: 275, stay: 10.8, cost: 50.81, roi: 8.62, cart: 12, buyers: 3, sales: 1744.0, kw_people: 137, kw_cart: 7, kw_pay: 1, crowd_people: 27, crowd_cart: 0, crowd_pay: 0, search_people: 51, search_cart: 3, search_pay: 0, rec_people: 14, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-13', visitors: 236, stay: 8.17, cost: 38.89, roi: 0, cart: 11, buyers: 1, sales: 423.0, kw_people: 108, kw_cart: 10, kw_pay: 0, crowd_people: 31, crowd_cart: 0, crowd_pay: 0, search_people: 47, search_cart: 2, search_pay: 0, rec_people: 5, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-12', visitors: 237, stay: 9.37, cost: 42.7, roi: 0, cart: 5, buyers: 0, sales: 0.0, kw_people: 114, kw_cart: 3, kw_pay: 0, crowd_people: 29, crowd_cart: 0, crowd_pay: 0, search_people: 43, search_cart: 1, search_pay: 0, rec_people: 13, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-11', visitors: 250, stay: 7.56, cost: 44.5, roi: 0, cart: 4, buyers: 3, sales: 1302.84, kw_people: 96, kw_cart: 3, kw_pay: 0, crowd_people: 54, crowd_cart: 0, crowd_pay: 0, search_people: 64, search_cart: 0, search_pay: 1, rec_people: 4, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-10', visitors: 236, stay: 10.3, cost: 19.53, roi: 41.94, cart: 19, buyers: 6, sales: 3698.44, kw_people: 75, kw_cart: 6, kw_pay: 2, crowd_people: 9, crowd_cart: 0, crowd_pay: 0, search_people: 63, search_cart: 6, search_pay: 3, rec_people: 10, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-09', visitors: 265, stay: 7.86, cost: 39.8, roi: 0, cart: 7, buyers: 2, sales: 855.42, kw_people: 85, kw_cart: 1, kw_pay: 0, crowd_people: 49, crowd_cart: 1, crowd_pay: 0, search_people: 62, search_cart: 2, search_pay: 1, rec_people: 13, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-08', visitors: 296, stay: 8.88, cost: 36.31, roi: 0, cart: 4, buyers: 3, sales: 1284.0, kw_people: 91, kw_cart: 0, kw_pay: 0, crowd_people: 63, crowd_cart: 0, crowd_pay: 0, search_people: 53, search_cart: 1, search_pay: 0, rec_people: 13, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-07', visitors: 331, stay: 9.41, cost: 52.29, roi: 0, cart: 5, buyers: 2, sales: 876.0, kw_people: 98, kw_cart: 3, kw_pay: 0, crowd_people: 111, crowd_cart: 0, crowd_pay: 0, search_people: 39, search_cart: 2, search_pay: 0, rec_people: 5, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-06', visitors: 267, stay: 8.38, cost: 49.51, roi: 0, cart: 13, buyers: 5, sales: 2593.84, kw_people: 90, kw_cart: 5, kw_pay: 1, crowd_people: 70, crowd_cart: 0, crowd_pay: 0, search_people: 41, search_cart: 3, search_pay: 2, rec_people: 9, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-05', visitors: 275, stay: 10.29, cost: 44.02, roi: 0, cart: 16, buyers: 8, sales: 4149.06, kw_people: 107, kw_cart: 5, kw_pay: 0, crowd_people: 70, crowd_cart: 1, crowd_pay: 0, search_people: 37, search_cart: 4, search_pay: 1, rec_people: 10, rec_cart: 1, rec_pay: 1 },
+  { dateStr: '2026-04-04', visitors: 232, stay: 9.37, cost: 29.53, roi: 0, cart: 7, buyers: 2, sales: 1236.02, kw_people: 68, kw_cart: 1, kw_pay: 0, crowd_people: 51, crowd_cart: 0, crowd_pay: 0, search_people: 50, search_cart: 1, search_pay: 0, rec_people: 5, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-03', visitors: 196, stay: 9.61, cost: 27.38, roi: 0, cart: 9, buyers: 6, sales: 3722.79, kw_people: 66, kw_cart: 4, kw_pay: 0, crowd_people: 18, crowd_cart: 0, crowd_pay: 0, search_people: 41, search_cart: 0, search_pay: 1, rec_people: 7, rec_cart: 1, rec_pay: 1 },
+  { dateStr: '2026-04-02', visitors: 224, stay: 11.73, cost: 25.46, roi: 32.13, cart: 6, buyers: 7, sales: 5346.08, kw_people: 87, kw_cart: 1, kw_pay: 1, crowd_people: 14, crowd_cart: 0, crowd_pay: 0, search_people: 43, search_cart: 1, search_pay: 2, rec_people: 13, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-04-01', visitors: 191, stay: 9.34, cost: 36.34, roi: 11.96, cart: 7, buyers: 7, sales: 3793.17, kw_people: 73, kw_cart: 2, kw_pay: 1, crowd_people: 32, crowd_cart: 1, crowd_pay: 0, search_people: 38, search_cart: 4, search_pay: 1, rec_people: 11, rec_cart: 0, rec_pay: 1 },
+  { dateStr: '2026-03-31', visitors: 298, stay: 9.94, cost: 33.97, roi: 12.01, cart: 17, buyers: 6, sales: 3253.54, kw_people: 95, kw_cart: 8, kw_pay: 1, crowd_people: 22, crowd_cart: 0, crowd_pay: 0, search_people: 55, search_cart: 6, search_pay: 3, rec_people: 11, rec_cart: 0, rec_pay: 0 },
+  { dateStr: '2026-03-03', visitors: 255, stay: 510.0, cost: 23.89, roi: 33.95, cart: 21, buyers: 11, sales: 5289.76, kw_people: 97, kw_cart: 7, kw_pay: 2, crowd_people: 5, crowd_cart: 0, crowd_pay: 0, search_people: 64, search_cart: 1, search_pay: 4, rec_people: 18, rec_cart: 2, rec_pay: 0 }
+];
+
 // ====== 商品筛选 ======
-// 商品映射（可扩展）
+// 商品映射
 const products = {
   '663773272822': 'allmax金标乳清',
-  // 未来可添加更多商品
+  '614500457679': '商品614500457679',
 };
 
-// 根据选中的商品筛选数据（目前只有1个商品，保持兼容）
-function filterByProduct(data, productId) {
-  if (!productId) return data; // 无选择则返回全部
-  return data; // 当前数据都是allmax金标乳清的
+// 根据选中的商品切换数据源
+function filterByProduct(productId) {
+  if (productId === '614500457679') {
+    return rawData2;
+  }
+  return rawData; // 默认返回allmax
 }
 
 // 商品搜索/选择事件
@@ -270,8 +296,8 @@ function getDateRange(range, customFrom, customTo) {
   return { from, to, label };
 }
 
-function filterData(from, to) {
-  return rawData.filter(r => r.dateStr >= from && r.dateStr <= to);
+function filterData(from, to, data) {
+  return (data || rawData).filter(r => r.dateStr >= from && r.dateStr <= to);
 }
 
 // ====== 更新图表和指标 ======
@@ -450,8 +476,8 @@ function triggerUpdate() {
     from = customFrom; to = customTo; label = `${from} ~ ${to}`;
   }
   
-  let data = filterData(from, to);
-  data = filterByProduct(data, productId);
+  let data = filterByProduct(productId);
+  data = filterData(from, to, data);
   updateDashboard(data, label);
 }
 
